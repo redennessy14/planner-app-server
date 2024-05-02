@@ -14,7 +14,7 @@ model User {
   email         String   @unique
   name          String?
   password      String
-  workInterval  Int?     @default(50) @map("work_interval")
+  workInterval  Int?     @default(50) @map("work_Interval")
   breakInterval Int?     @default(10) @map("break_interval")
   intervalCount Int?     @default(7) @map("intervals_count")
 
