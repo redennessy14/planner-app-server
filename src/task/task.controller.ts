@@ -7,10 +7,10 @@ import {
 	Put,
 	Body
 } from '@nestjs/common'
-import { UserService } from './user.service'
+import { UserService } from './task.service'
 import { CurrentUser } from 'src/auth/decorator/user.decorator'
 import { Auth } from 'src/auth/decorator/auth.decorator'
-import { UserDto } from './user.dto'
+import { UserDto } from './task.dto'
 
 @Controller('user/profile')
 export class UserController {
