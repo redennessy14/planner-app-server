@@ -1,100 +1,46 @@
 import { Injectable } from '@nestjs/common'
-import { hash } from 'argon2'
-import { AuthDto } from 'src/auth/dto/auth.dto'
 import { PrismaService } from 'src/prisma.service'
-import { UserDto } from './task.dto'
-import { startOfDay, subDays } from 'date-fns'
+import { TaskDto } from './task.dto'
 
 @Injectable()
-export class UserService {
+export class TaskService {
 	constructor(private prisma: PrismaService) {}
 
-	getById(id: string) {
-		return this.prisma.user.findUnique({
+	async getAll(userId: string) {
+		return this.prisma.task.findMany({
 			where: {
-				id
-			},
-			include: {
-				tasks: true
+				userId
 			}
 		})
 	}
 
-	getByEmail(email: string) {
-		return this.prisma.user.findUnique({
-			where: {
-				email
-			}
-		})
-	}
-
-	async getProfile(id: string) {
-		const profile = await this.getById(id)
-
-		const totalTasks = profile.tasks.length
-		const completedTasks = await this.prisma.task.count({
-			where: {
-				userId: id,
-				isComplated: true
-			}
-		})
-
-		const todayStart = startOfDay(new Date())
-		const weekStart = startOfDay(subDays(new Date(), 7))
-
-		const todayTasks = await this.prisma.task.count({
-			where: {
-				userId: id,
-				createdAt: {
-					gte: todayStart.toISOString()
+	async create(dto: TaskDto, userId: string) {
+		return this.prisma.task.create({
+			data: {
+				...dto,
+				user: {
+					connect: {
+						id: userId
+					}
 				}
 			}
 		})
-
-		const weekTasks = await this.prisma.task.count({
-			where: {
-				userId: id,
-				createdAt: {
-					gte: weekStart.toISOString()
-				}
-			}
-		})
-		const { password, ...rest } = profile
-
-		return {
-			user: rest,
-			statistics: [
-				{ label: 'Total ', value: totalTasks },
-				{ label: 'Completed tasks', value: completedTasks },
-				{ label: 'Today tasks', value: totalTasks },
-				{ label: 'Week tasks', value: weekTasks }
-			]
-		}
 	}
 
-	async create(dto: AuthDto) {
-		const user = {
-			email: dto.email,
-			name: '',
-			password: await hash(dto.password)
-		}
-		return this.prisma.user.create({
-			data: user
-		})
-	}
-	async update(id: string, dto: UserDto) {
-		let data = dto
-		if (dto.password) {
-			data = { ...dto, password: await hash(dto.password) }
-		}
-		return this.prisma.user.update({
+	async update(dto: Partial<TaskDto>, taskId: string, userId: string) {
+		return this.prisma.task.update({
 			where: {
-				id
+				userId,
+				id: taskId
 			},
-			data,
-			select: {
-				name: true,
-				email: true
+			data: dto
+		})
+	}
+
+	async delete(taskId: string) {
+		return this.prisma.task.delete({
+			where: {
+				id: taskId
 			}
 		})
 	}

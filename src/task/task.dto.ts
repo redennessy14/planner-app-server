@@ -1,40 +1,22 @@
-import {
-	IsEmail,
-	IsNumber,
-	IsOptional,
-	Max,
-	Min,
-	MinLength,
-	IsString
-} from 'class-validator'
+import { Priority } from '@prisma/client'
+import { Transform } from 'class-transformer'
+import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator'
 
-export class PomodoroSettingsDto {
-	@IsOptional()
-	@IsNumber()
-	@Min(1)
-	workInterval?: number
-
-	@IsOptional()
-	@IsNumber()
-	@Min(1)
-	breakInterval?: number
-
-	@IsOptional()
-	@IsNumber()
-	@Min(1)
-	@Max(10)
-	intervalsCount?: number
-}
-
-export class UserDto extends PomodoroSettingsDto {
-	@IsEmail()
-	@IsOptional()
-	email: string
-
-	@IsOptional()
-	@MinLength(6, {
-		message: 'Password must be at least 6 characters long'
-	})
+export class TaskDto {
 	@IsString()
-	password: string
+	@IsOptional()
+	name: string
+
+	@IsBoolean()
+	@IsOptional()
+	isComplated?: boolean
+
+	@IsString()
+	@IsOptional()
+	createdAt?: string
+
+	@IsEnum(Priority)
+	@IsOptional()
+	@Transform(({ value }) => ('' + value).toLowerCase())
+	priority?: Priority
 }

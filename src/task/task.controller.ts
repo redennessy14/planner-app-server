@@ -1,32 +1,54 @@
 import {
+	Body,
 	Controller,
+	Delete,
 	Get,
-	UsePipes,
-	ValidationPipe,
 	HttpCode,
+	Param,
+	Post,
 	Put,
-	Body
+	UsePipes,
+	ValidationPipe
 } from '@nestjs/common'
-import { UserService } from './task.service'
-import { CurrentUser } from 'src/auth/decorator/user.decorator'
+import { TaskService } from './task.service'
 import { Auth } from 'src/auth/decorator/auth.decorator'
-import { UserDto } from './task.dto'
+import { CurrentUser } from 'src/auth/decorator/user.decorator'
+import { TaskDto } from './task.dto'
 
-@Controller('user/profile')
-export class UserController {
-	constructor(private readonly userService: UserService) {}
+@Controller('user/tasks')
+export class TaskController {
+	constructor(private readonly taskService: TaskService) {}
 
 	@Get()
 	@Auth()
-	async profile(@CurrentUser('id') id: string) {
-		return this.userService.getProfile(id)
+	async getAll(@CurrentUser('id') userId: string) {
+		return this.taskService.getAll(userId)
 	}
 
 	@UsePipes(new ValidationPipe())
 	@HttpCode(200)
-	@Put()
+	@Post()
 	@Auth()
-	async updateProfile(@CurrentUser('id') id: string, @Body() dto: UserDto) {
-		return this.userService.update(id, dto)
+	async create(@Body() dto: TaskDto, @CurrentUser('id') userId: string) {
+		return this.taskService.create(dto, userId)
+	}
+
+	@UsePipes(new ValidationPipe())
+	@HttpCode(200)
+	@Put(':id')
+	@Auth()
+	async update(
+		@Body() dto: TaskDto,
+		@CurrentUser('id') userId: string,
+		@Param('id') id: string
+	) {
+		return this.taskService.update(dto, id, userId)
+	}
+
+	@HttpCode(200)
+	@Delete(':id')
+	@Auth()
+	async delete(@Param('id') id: string) {
+		return this.taskService.delete(id)
 	}
 }
